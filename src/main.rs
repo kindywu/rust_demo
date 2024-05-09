@@ -1,3 +1,6 @@
+mod garden;
+
 fn main() {
-    println!("hello, rust")
+    garden::garden();
+    garden::vegetables::vegetable()
 }
