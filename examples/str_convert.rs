@@ -6,6 +6,24 @@ fn main() {
 
     println!("MSG2={}", MSG2);
 
+    let char_vet: Vec<char> = MSG.chars().collect();
+    for char in char_vet {
+        println!("{char}")
+    }
+
+    // FromStr trait -> parse
+    let num: i32 = "10".parse().unwrap();
+    println!("{num}");
+
+    let flag: bool = "true".parse().unwrap();
+    println!("{flag}");
+
+    let true_str = true.to_string();
+    println!("{true_str}");
+
+    let num_str = 399101.to_string();
+    println!("{num_str}");
+
     let mut msg3: &'static str = "Hello 你好";
     println!("msg3={}", msg3);
     msg3 = "Hello 世界";
@@ -14,13 +32,7 @@ fn main() {
     str_to_other();
     string_to_other();
     u8_to_other();
-    let vec_str: Vec<u8> = vec![104, 101, 108, 108, 111, 32, 228, 189, 160, 229, 165, 189];
-    let str = std::str::from_utf8(&vec_str).unwrap();
-    println!("{}", str);
-    let string = String::from_utf8(vec_str.clone()).unwrap();
-    println!("{}", string);
-    let byte_str = vec_str.as_slice();
-    println!("{:?}", byte_str);
+    vec_to_other()
 }
 
 fn str_to_other() {
@@ -50,6 +62,8 @@ fn string_to_other() {
     println!("{}", string);
     let mut str: &str = &string;
     println!("{}", str);
+    str = &string[..];
+    println!("{}", str);
     str = string.as_str();
     println!("{}", str);
     // String -> &[u8]
@@ -69,6 +83,22 @@ fn u8_to_other() {
     let string = String::from_utf8_lossy(byte_str);
     println!("{}", string);
     //&[u8]->Vec<u8>
-    let vec_str = byte_str.to_vec();
+    let mut vec_str = byte_str.to_vec();
     println!("{:?}", vec_str);
+    vec_str = byte_str.to_owned();
+    println!("{:?}", vec_str);
+}
+
+fn vec_to_other() {
+    let vec_str: Vec<u8> = vec![104, 101, 108, 108, 111, 32, 228, 189, 160, 229, 165, 189];
+    let str = std::str::from_utf8(&vec_str).unwrap();
+    println!("{}", str);
+    let string = String::from_utf8(vec_str.clone()).unwrap();
+    println!("{}", string);
+    let mut byte_str = vec_str.as_slice();
+    println!("{:?}", byte_str);
+    byte_str = &vec_str[..];
+    println!("{:?}", byte_str);
+    byte_str = &vec_str;
+    println!("{:?}", byte_str);
 }

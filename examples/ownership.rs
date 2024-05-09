@@ -13,7 +13,7 @@ fn demo1() {
     let a = String::from("hello");
     let b = a;
     // println!("{} {}", a, b) //borrow of moved value: `a` value borrowed here after move
-    println!("demo1 => {}", b)
+    println!("demo1 => {b:?}")
 }
 
 fn demo2() {
