@@ -43,7 +43,7 @@ fn print_area2(shape: &impl Size) {
 }
 
 #[allow(dead_code)]
-fn print_area2_2(shapes: &[impl Size]) {
+fn print_area2_2(shapes: &[&impl Size]) {
     for shape in shapes {
         println!("{} {}", stringify!(shape), shape.area())
     }
@@ -57,7 +57,7 @@ where
 }
 
 #[allow(dead_code)]
-fn print_area3_2<T>(shapes: &[T])
+fn print_area3_2<T>(shapes: &[&T])
 where
     T: Size,
 {
@@ -82,7 +82,11 @@ fn main() {
 
     print_area_3(&[&rect, &circle]);
 
-    print_area2_2(&[circle]);
+    print_area2_2(&[&circle]);
 
-    print_area3_2(&[rect]);
+    print_area3_2(&[&rect, &Rectangle { x: 20.0, y: 30.0 }]);
+
+    // print_area2_2(&[&circle, &rect]);
+
+    // print_area3_2(&[&rect, &circle]);
 }
