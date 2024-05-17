@@ -4,5 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.83"
+csv = "1.3.0"
 nom = "7.1.3"
 rand = "0.8.5"
+serde = { version = "1.0.202", features = ["derive"] }
+zxcvbn = "2.2.2"
