@@ -29,11 +29,10 @@ fn example() -> anyhow::Result<()> {
     Ok(())
 }
 
+//USE: cargo run --example csv < examples/data/juventus.csv
 fn main() {
     if let Err(err) = example() {
         println!("error running example: {}", err);
         process::exit(1);
     }
 }
-
-//cargo run --example csv < examples/data/juventus.csv
