@@ -41,6 +41,8 @@ fn main() {
     let b = Point { x: 10, y: 20 };
     let c = a.add(b);
     println!("{c:?}");
-    let d = c.add(5);
+    let d = c.add(5i32);
     println!("{d:?}");
+    let result = d.add(50u32);
+    println!("{result}");
 }
