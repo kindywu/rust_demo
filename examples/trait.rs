@@ -82,7 +82,7 @@ fn main() {
 
     print_area_3(&[&rect, &circle]);
 
-    print_area2_2(&[&circle]);
+    print_area2_2(&[&circle, &Circle { radius: 1.0 }]);
 
     print_area3_2(&[&rect, &Rectangle { x: 20.0, y: 30.0 }]);
 
