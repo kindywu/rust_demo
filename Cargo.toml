@@ -5,10 +5,14 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.83"
+bytes = "1.6.0"
 csv = "1.3.0"
 enum_dispatch = "0.3.13"
 nom = "7.1.3"
 rand = "0.8.5"
+rust_decimal = "1.35.0"
+rust_decimal_macros = "1.34.2"
 serde = { version = "1.0.202", features = ["derive"] }
 tokio = { version = "1.37.0", features = ["full"] }
+winnow = { version = "0.6.8", features = ["debug"] }
 zxcvbn = "2.2.2"
