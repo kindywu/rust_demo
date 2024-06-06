@@ -1,7 +1,7 @@
 use bytes::{BufMut, BytesMut};
 
 fn main() {
-    let mut buf = BytesMut::with_capacity(1024);
+    let mut buf = BytesMut::with_capacity(10);
     buf.put(&b"hello world"[..]); //11
     buf.put_u16(1234); //2
 
@@ -13,5 +13,5 @@ fn main() {
     let b = buf.split();
     assert_eq!(b, b"goodbye world"[..]);
 
-    assert_eq!(buf.capacity(), 998);
+    assert_eq!(buf.capacity(), 0);
 }
