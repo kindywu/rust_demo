@@ -599,6 +599,7 @@ dependencies = [
  "libc",
  "nom",
  "rand",
+ "rendezvous",
  "rust_decimal",
  "rust_decimal_macros",
  "serde",
@@ -1770,6 +1771,12 @@ checksum = "71fe3824f5629716b1589be05dacd749f6aa084c87e00e016714a8cdfccc997c"
 dependencies = [
  "bytecheck",
 ]
+
+[[package]]
+name = "rendezvous"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7aef67f84091e85426f6923523afa87aefeef378ed89155f50be1cd35c5d0373"
 
 [[package]]
 name = "rfc6979"
