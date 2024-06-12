@@ -3,6 +3,62 @@
 version = 3
 
 [[package]]
+name = "actix"
+version = "0.13.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de7fa236829ba0841304542f7614c42b80fca007455315c45c785ccfa873a85b"
+dependencies = [
+ "actix-macros",
+ "actix-rt",
+ "actix_derive",
+ "bitflags 2.5.0",
+ "bytes",
+ "crossbeam-channel",
+ "futures-core",
+ "futures-sink",
+ "futures-task",
+ "futures-util",
+ "log",
+ "once_cell",
+ "parking_lot",
+ "pin-project-lite",
+ "smallvec",
+ "tokio",
+ "tokio-util",
+]
+
+[[package]]
+name = "actix-macros"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e01ed3140b2f8d422c68afa1ed2e85d996ea619c988ac834d255db32138655cb"
+dependencies = [
+ "quote",
+ "syn 2.0.64",
+]
+
+[[package]]
+name = "actix-rt"
+version = "2.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24eda4e2a6e042aa4e55ac438a2ae052d3b5da0ecf83d7411e1a368946925208"
+dependencies = [
+ "futures-core",
+ "tokio",
+]
+
+[[package]]
+name = "actix_derive"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c7db3d5a9718568e4cf4a537cfd7070e6e6ff7481510d0237fb529ac850f6d3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.64",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -471,6 +527,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-channel"
+version = "0.5.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33480d6946193aa8033910124896ca395333cae7e2d1113d1fef6c3272217df2"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "crossbeam-deque"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -589,6 +654,7 @@ dependencies = [
 name = "demo"
 version = "0.1.0"
 dependencies = [
+ "actix",
  "anyhow",
  "bytes",
  "candle-core",
@@ -596,6 +662,7 @@ dependencies = [
  "csv",
  "enum_dispatch",
  "jwt-simple",
+ "lazy_static",
  "libc",
  "nom",
  "rand",
@@ -868,6 +935,36 @@ name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6d5a32815ae3f33302d95fdcb2ce17862f8c65363dcfd29360480ba1001fc9c"
+
+[[package]]
+name = "futures-core"
+version = "0.3.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dfc6580bb841c5a68e9ef15c77ccc837b40a7504914d52e47b8b0e9bbda25a1d"
+
+[[package]]
+name = "futures-sink"
+version = "0.3.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9fb8e00e87438d937621c1c6269e53f536c14d3fbd6a042bb24879e57d474fb5"
+
+[[package]]
+name = "futures-task"
+version = "0.3.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38d84fa142264698cdce1a9f9172cf383a0c82de1bddcf3092901442c4097004"
+
+[[package]]
+name = "futures-util"
+version = "0.3.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d6401deb83407ab3da39eba7e33987a73c3df0c82b4bb5813ee871c19c41d48"
+dependencies = [
+ "futures-core",
+ "futures-task",
+ "pin-project-lite",
+ "pin-utils",
+]
 
 [[package]]
 name = "gemm"
@@ -1513,6 +1610,12 @@ name = "pin-project-lite"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bda66fc9667c18cb2758a2ac84d1167245054bcf85d5d1aaa6923f45801bdd02"
+
+[[package]]
+name = "pin-utils"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pkcs1"
@@ -2240,6 +2343,19 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.64",
+]
+
+[[package]]
+name = "tokio-util"
+version = "0.7.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9cf6b47b3771c49ac75ad09a6162f53ad4b8088b76ac60e8ec1455b31a189fe1"
+dependencies = [
+ "bytes",
+ "futures-core",
+ "futures-sink",
+ "pin-project-lite",
+ "tokio",
 ]
 
 [[package]]
