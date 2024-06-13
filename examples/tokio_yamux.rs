@@ -1,19 +1,20 @@
-use std::time::Duration;
-
 use anyhow::Result;
-use futures::{SinkExt, StreamExt};
+use futures::prelude::*;
 use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
-    time::sleep,
 };
-
-use tokio_util::codec::{Framed, LinesCodec};
-use tokio_yamux::{session::SessionType, Config, Session};
+use tokio_yamux::{config::Config, session::Session};
+use tracing::{info, level_filters::LevelFilter};
+use tracing_subscriber::{fmt::Layer, layer::SubscriberExt, util::SubscriberInitExt, Layer as _};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let client = client();
-    let server = server();
+    let layer = Layer::new().with_filter(LevelFilter::INFO);
+    tracing_subscriber::registry().with(layer).init();
+
+    let client = run_client();
+    let server = run_server();
 
     let res = tokio::try_join!(server, client);
     match res {
@@ -27,107 +28,66 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn client() -> Result<()> {
-    println!("start client");
+async fn run_server() -> Result<()> {
+    let listener = TcpListener::bind("127.0.0.1:12345").await.unwrap();
 
-    // 创建一个 TCP 连接
-    let stream = TcpStream::connect("127.0.0.1:8080").await?;
-
-    // 创建一个 yamux 会话配置
-    let config = Config::default();
-
-    // 使用配置创建一个 yamux 会话
-    let mut session = Session::new(stream, config, SessionType::Client);
-
-    // 创建一个新的子流
-    let substream = session.open_stream()?;
-
-    sleep(Duration::from_secs(3)).await;
-
-    let mut substream = Framed::new(substream, LinesCodec::new());
-
-    // 向子流写入数据
-    if let Err(e) = substream.send("Hello, world!").await {
-        eprintln!("client failed to write to substream: {}", e);
-    }
-    println!("client send");
-
-    // 从子流读取数据
-    match substream.next().await {
-        Some(Ok(line)) => println!("client received: {}", line),
-        Some(Err(e)) => eprintln!("client failed to read from substream: {}", e),
-        None => eprintln!("client failed to read from substream"),
-    }
-    println!("client exit");
-    // 关闭子流
-    Ok(())
-}
-
-async fn server() -> Result<()> {
-    println!("start server");
-    // 创建一个 TCP 监听器
-    let listener = TcpListener::bind("127.0.0.1:8080").await?;
-
-    // 创建一个 yamux 会话配置
-    let config = Config::default();
-
-    loop {
-        let (stream, addr) = listener.accept().await?;
-        let session = Session::new(stream, config, SessionType::Server);
-        println!("server accept client {}", addr);
-        // 为每个会话创建一个任务
+    while let Ok((socket, _)) = listener.accept().await {
+        info!("accepted a socket: {:?}", socket.peer_addr());
+        let mut session = Session::new_server(socket, Config::default());
         tokio::spawn(async move {
-            if let Err(e) = handle_session(session).await {
-                eprintln!("server session error: {}", e);
+            while let Some(Ok(mut stream)) = session.next().await {
+                info!("Server accept a stream from client: id={}", stream.id());
+                tokio::spawn(async move {
+                    let mut data = [0u8; 3];
+                    stream.read_exact(&mut data).await.unwrap();
+                    info!("[server] read data: {:?}", data);
+
+                    info!("[server] send 'def' to remote");
+                    stream.write_all(b"def").await.unwrap();
+
+                    let mut data = [0u8; 2];
+                    stream.read_exact(&mut data).await.unwrap();
+                    info!("[server] read again: {:?}", data);
+                });
             }
         });
     }
+
+    Ok(())
 }
 
-async fn handle_session(mut session: Session<tokio::net::TcpStream>) -> Result<()> {
-    println!("server handle session");
+async fn run_client() -> Result<()> {
+    let socket = TcpStream::connect("127.0.0.1:12345").await.unwrap();
+    info!("[client] connected to server: {:?}", socket.peer_addr());
+    let mut session = Session::new_client(socket, Config::default());
+    let mut stream = session.open_stream().unwrap();
 
-    loop {
-        match session.next().await {
-            Some(Ok(stream)) => {
-                // 处理子流
-                println!("server handle sub stream");
-                let stream = Framed::new(stream, LinesCodec::new());
-
-                let (mut writer, mut reader) = stream.split();
-
-                println!("server split stream");
-                tokio::spawn(async move {
-                    loop {
-                        let line = match reader.next().await {
-                            Some(Ok(line)) => line,
-                            Some(Err(e)) => {
-                                eprintln!("{e}");
-                                break;
-                            }
-                            None => {
-                                eprintln!("none");
-                                break;
-                            }
-                        };
-
-                        println!("server receive {line}");
-                        if let Err(e) = writer.send(line).await {
-                            println!("server failed to send line {}", e);
-                        }
-                    }
-                });
-            }
-            Some(Err(e)) => {
-                eprintln!("server failed to accept stream: {}", e);
-                break;
-            }
-            None => {
-                eprintln!("server failed to accept stream");
-                break;
+    tokio::spawn(async move {
+        loop {
+            match session.next().await {
+                Some(Ok(_)) => (),
+                Some(Err(e)) => {
+                    info!("{}", e);
+                    break;
+                }
+                None => {
+                    info!("closed");
+                    break;
+                }
             }
         }
-    }
+    });
 
+    info!("[client] send 'abc' to remote");
+    stream.write_all(b"abc").await.unwrap();
+
+    info!("[client] reading data");
+    let mut data = [0u8; 3];
+    stream.read_exact(&mut data).await.unwrap();
+    info!("[client] read data: {:?}", data);
+
+    info!("[client] send 'dd' to remote");
+    stream.write_all(b"dd").await.unwrap();
+    stream.shutdown().await.unwrap();
     Ok(())
 }
