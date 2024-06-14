@@ -1,10 +1,8 @@
 use anyhow::Result;
 use futures::prelude::*;
-use log::info;
-use tokio::{
-    io::{AsyncReadExt, AsyncWriteExt},
-    net::{TcpListener, TcpStream},
-};
+use log::{info, warn};
+use tokio::net::{TcpListener, TcpStream};
+use tokio_util::codec::{Framed, LinesCodec};
 use tokio_yamux::{config::Config, session::Session};
 
 #[tokio::main]
@@ -35,20 +33,37 @@ async fn run_server() -> Result<()> {
         info!("accepted a socket: {:?}", socket.peer_addr());
         let mut session = Session::new_server(socket, Config::default());
         tokio::spawn(async move {
-            while let Some(Ok(mut stream)) = session.next().await {
-                info!("Server accept a stream from client: id={}", stream.id());
+            while let Some(Ok(stream)) = session.next().await {
+                let stream_id = stream.id();
+                info!(
+                    "Server accept a stream from client: stream_id = {}",
+                    stream_id
+                );
+
+                let mut frame = Framed::new(stream, LinesCodec::new());
+
                 tokio::spawn(async move {
-                    let mut data = [0u8; 3];
-                    stream.read_exact(&mut data).await.unwrap();
-                    info!("[server] read data: {:?}", data);
+                    loop {
+                        match frame.next().await {
+                            Some(Ok(message)) => {
+                                info!("[server] read data: {}", message);
 
-                    info!("[server] send 'def' to remote");
-                    stream.write_all(b"def").await.unwrap();
-
-                    let mut data = [0u8; 2];
-                    stream.read_exact(&mut data).await.unwrap();
-                    info!("[server] read again: {:?}", data);
+                                info!("[server] send '{}' to remote", message);
+                                if let Err(e) = frame.send(message).await {
+                                    warn!("[server] read LinesCodecError: {}", e);
+                                    break;
+                                }
+                            }
+                            Some(Err(e)) => {
+                                warn!("[server] LinesCodecError: {}", e);
+                                break;
+                            }
+                            None => break,
+                        }
+                    }
                 });
+
+                info!("[server] stream_id {stream_id} exit");
             }
         });
     }
@@ -60,7 +75,9 @@ async fn run_client() -> Result<()> {
     let socket = TcpStream::connect("127.0.0.1:12345").await.unwrap();
     info!("[client] connected to server: {:?}", socket.peer_addr());
     let mut session = Session::new_client(socket, Config::default());
-    let mut stream = session.open_stream().unwrap();
+    let stream = session.open_stream().unwrap();
+
+    let mut frame = Framed::new(stream, LinesCodec::new());
 
     tokio::spawn(async move {
         loop {
@@ -71,23 +88,22 @@ async fn run_client() -> Result<()> {
                     break;
                 }
                 None => {
-                    info!("closed");
+                    info!("[client] closed");
                     break;
                 }
             }
         }
     });
 
-    info!("[client] send 'abc' to remote");
-    stream.write_all(b"abc").await.unwrap();
+    for i in 1..=3 {
+        let message = format!("hello world {}", i);
+        info!("[client] send '{message}' to remote");
+        frame.send(message).await.unwrap();
 
-    info!("[client] reading data");
-    let mut data = [0u8; 3];
-    stream.read_exact(&mut data).await.unwrap();
-    info!("[client] read data: {:?}", data);
+        info!("[client] reading data");
+        let message = frame.next().await.unwrap().unwrap();
+        info!("[client] read data: {:?}", message);
+    }
 
-    info!("[client] send 'dd' to remote");
-    stream.write_all(b"dd").await.unwrap();
-    stream.shutdown().await.unwrap();
     Ok(())
 }
